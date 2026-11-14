@@ -27,6 +27,30 @@ public class Server {
             }
             send(x,200,"application/json",Files.readString(Path.of("evidence","known-sessions.json")));
         });
+        server.createContext("/api/salesforce/inspect",x->{
+            if(!x.getRequestMethod().equals("POST")){send(x,405,"application/json","{\"error\":\"Use POST\"}");return;}
+            Map<String,String> env=System.getenv();
+            String access=env.getOrDefault("SF_VERIFY_API_KEY","");
+            if(!"true".equalsIgnoreCase(env.getOrDefault("SF_LIVE_ENABLED","false"))||access.length()<32){
+                send(x,503,"application/json","{\"error\":\"Live Salesforce integration not configured\"}");return;
+            }
+            String supplied=x.getRequestHeaders().getFirst("X-HandoffGuard-Key");
+            if(supplied==null||!java.security.MessageDigest.isEqual(access.getBytes(StandardCharsets.UTF_8),supplied.getBytes(StandardCharsets.UTF_8))){
+                send(x,401,"application/json","{\"error\":\"Unauthorized\"}");return;
+            }
+            try{
+                byte[] body=x.getRequestBody().readNBytes(4097);
+                if(body.length>4096){send(x,413,"application/json","{\"error\":\"Request too large\"}");return;}
+                Map<String,Object> input=JsonReader.object(JsonReader.parse(new String(body,StandardCharsets.UTF_8)));
+                String sessionId=JsonReader.string(input.get("sessionId"));
+                Set<String> humans=new HashSet<>();
+                for(String id:env.getOrDefault("SF_HUMAN_USER_IDS","").split(","))
+                    if(id.trim().matches("[a-zA-Z0-9]{15}([a-zA-Z0-9]{3})?"))humans.add(id.trim());
+                Map<String,Object> result=new SalesforceCollector(env).inspect(sessionId,humans);
+                send(x,200,"application/json",Json.encode(result));
+            }catch(IllegalArgumentException e){send(x,400,"application/json",Json.encode(Map.of("error",e.getMessage())));}
+            catch(Exception e){System.err.println("Salesforce inspection failed: "+e.getClass().getSimpleName());send(x,502,"application/json","{\"error\":\"Salesforce inspection unavailable; check server logs\"}");}
+        });
         server.createContext("/api/salesforce/verify",x->{
             if(!x.getRequestMethod().equals("POST")){send(x,405,"application/json","{\"error\":\"Use POST\"}");return;}
             Map<String,String> env=System.getenv();
@@ -50,7 +74,16 @@ public class Server {
                 Set<String> humans=new HashSet<>();
                 for(String id:allow.split(","))if(id.trim().matches("[a-zA-Z0-9]{15}([a-zA-Z0-9]{3})?"))humans.add(id.trim());
                 AcceptanceVerifier.Result result=new SalesforceCollector(env).verify(sessionId,transfer,java.time.Instant.now(),humans,java.time.Duration.ofSeconds(60));
-                send(x,200,"application/json",Json.encode(result));
+                Map<String,Object> resultView=new LinkedHashMap<>();
+                resultView.put("sessionId", result.sessionId());
+                resultView.put("humanAcceptanceFound", result.workId()!=null);
+                resultView.put("workId", result.workId());
+                resultView.put("provenance", result.provenance());
+                resultView.put("sloStatus", "NOT_VERIFIED_MANUAL_TRANSFER_TIMESTAMP");
+                resultView.put("reportedStatusFromSuppliedTimestamp", result.status().toString());
+                resultView.put("reportedLatencySecondsFromSuppliedTimestamp", result.latencySeconds());
+                resultView.put("warning", "Caller-supplied transfer timestamp is not independently verified; do not interpret reported latency as a Salesforce SLO");
+                send(x,200,"application/json",Json.encode(resultView));
             }catch(IllegalArgumentException e){send(x,400,"application/json",Json.encode(Map.of("error",e.getMessage())));}
             catch(Exception e){System.err.println("Salesforce verification failed: "+e.getClass().getSimpleName());send(x,502,"application/json","{\"error\":\"Salesforce verification unavailable; check server logs\"}");}
         });
