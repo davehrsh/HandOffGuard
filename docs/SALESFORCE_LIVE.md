@@ -38,3 +38,21 @@ The API uses the current server observation time, queries the Salesforce session
 - A complete paginated AgentWork query supports a no-acceptance finding at observation time, but data consistency and access permissions must be verified. A missing transfer-start timestamp results in no verdict.
 - This is an on-demand check, **not** a background 60-second timer. Automated scheduling and transfer-event ingestion are future work.
 - The simulator remains public and independent of Salesforce.
+
+
+## Read-only inspection without an inferred transfer time (recommended first test)
+
+The protected endpoint `POST /api/salesforce/inspect` takes only `{"sessionId":"0Mwg7000002VwGHCA0"}`. It returns whether a permitted human accepted the work, accepted-at timestamps, AgentWork count, and `sloStatus=NOT_ASSESSED_TRANSFER_START_UNVERIFIED`. It does not return transcripts or credentials.
+
+Cloud Shell connectivity test (this is intentionally read-only; inspect one known synthetic test session):
+
+```bash
+KEY="$(gcloud secrets versions access latest --secret=handoffguard-api-key --project=handoffguard)"
+curl --fail-with-body -sS -X POST "https://handoffguard-614664795142.asia-south1.run.app/api/salesforce/inspect" \
+  -H "Content-Type: application/json" \
+  -H "X-HandoffGuard-Key: $KEY" \
+  --data '{"sessionId":"0Mwg7000002VwGHCA0"}'
+unset KEY
+```
+
+The older `/api/salesforce/verify` endpoint still accepts a caller-supplied `transferStartedAt`. Its output now marks the resulting latency/SLO as **not verified**, because arbitrary supplied timestamps do not establish evidence of when escalation began. For a defensible 60-second claim, capture an independently sourced transfer-request event with a timestamp and a stable session correlation ID; then verify chronological ordering and capture source provenance. The date used in the initial connectivity test was illustrative and cannot substantiate the earlier `ACCEPTED_LATE` label.
