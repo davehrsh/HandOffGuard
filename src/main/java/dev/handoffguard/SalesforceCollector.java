@@ -52,4 +52,30 @@ public final class SalesforceCollector {
     for(Map<String,Object> row:rows)works.add(new AcceptanceVerifier.Work(JsonReader.string(row.get("Id")),JsonReader.string(row.get("WorkItemId")),JsonReader.string(row.get("UserId")),time(row.get("AcceptDateTime"))));
     return AcceptanceVerifier.verify(new AcceptanceVerifier.Evidence(sessionId,transferStart,observation,humanIds,works,"SALESFORCE_REST_LIVE",true),deadline);
   }
+  /** Returns evidence without deriving a deadline from a guessed transfer time. */
+  public Map<String,Object> inspect(String sessionId,Set<String> humanIds)throws Exception{
+    if(sessionId==null||!sessionId.matches("[a-zA-Z0-9]{15}([a-zA-Z0-9]{3})?"))throw new IllegalArgumentException("Invalid session ID");
+    if(humanIds==null||humanIds.isEmpty())throw new IllegalArgumentException("Human allowlist required");
+    String bearer=token();
+    List<Map<String,Object>> sessions=query(bearer,"SELECT Id FROM MessagingSession WHERE Id = '"+sessionId+"' LIMIT 1");
+    if(sessions.size()!=1)throw new IllegalArgumentException("MessagingSession not found");
+    List<Map<String,Object>> rows=query(bearer,"SELECT Id, WorkItemId, UserId, AcceptDateTime FROM AgentWork WHERE WorkItemId = '"+sessionId+"' ORDER BY CreatedDate ASC");
+    List<Map<String,Object>> accepted=new ArrayList<>();
+    for(Map<String,Object> row:rows){
+      String user=JsonReader.string(row.get("UserId"));
+      String at=JsonReader.string(row.get("AcceptDateTime"));
+      if(at!=null&&humanIds.contains(user))accepted.add(Map.of("workId",String.valueOf(row.get("Id")),"acceptedAt",at));
+    }
+    accepted.sort(Comparator.comparing(m->String.valueOf(m.get("acceptedAt"))));
+    Map<String,Object> result=new LinkedHashMap<>();
+    result.put("sessionId",sessionId);
+    result.put("provenance","SALESFORCE_REST_LIVE");
+    result.put("humanAcceptanceFound",!accepted.isEmpty());
+    result.put("humanAcceptances",accepted);
+    result.put("agentWorkRecordCount",rows.size());
+    result.put("sloStatus","NOT_ASSESSED_TRANSFER_START_UNVERIFIED");
+    result.put("note","Actual transfer-request timestamp must be independently established before computing a 60-second handoff SLO");
+    return result;
+  }
+
 }
