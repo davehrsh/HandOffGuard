@@ -87,7 +87,7 @@ public class Server {
             }catch(IllegalArgumentException e){send(x,400,"application/json",Json.encode(Map.of("error",e.getMessage())));}
             catch(Exception e){System.err.println("Salesforce verification failed: "+e.getClass().getSimpleName());send(x,502,"application/json","{\"error\":\"Salesforce verification unavailable; check server logs\"}");}
         });
-        server.createContext("/api/health",x->send(x,200,"application/json",Json.encode(Map.of("status","UP","salesforceConnected",false,"mode","SIMULATOR"))));
+        server.createContext("/api/health",x->send(x,200,"application/json",Json.encode(Map.of("status","UP","salesforceConnected",false,"salesforceIntegrationEnabled","true".equalsIgnoreCase(System.getenv().getOrDefault("SF_LIVE_ENABLED","false")),"mode","SIMULATOR_WITH_PROTECTED_SALESFORCE_API"))));
         server.createContext("/",x->{
             if(!x.getRequestMethod().equals("GET")){send(x,405,"text/plain","Use GET");return;}
             String path=x.getRequestURI().getPath();
