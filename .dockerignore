@@ -1,0 +1,6 @@
+.git
+build
+*.zip
+.env
+.env.*
+*.log
