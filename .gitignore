@@ -1,0 +1,8 @@
+build/
+.env
+.env.*
+!.env.example
+*.class
+*.log
+.idea/
+.vscode/
