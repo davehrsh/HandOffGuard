@@ -6,3 +6,4 @@ java com.sun.tools.javac.Main -source 21 -target 21 -d build/classes src/main/ja
 java -cp build/classes dev.handoffguard.EngineTest
 java -cp build/classes dev.handoffguard.AcceptanceVerifierTest
 java -cp build/classes dev.handoffguard.SalesforceVerifierRegressionTest
+java -cp build/classes dev.handoffguard.JsonReaderTest
