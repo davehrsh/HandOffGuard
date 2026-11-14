@@ -1,0 +1,7 @@
+session	atMs	type	key	value
+example-session	400	TRANSFER_REQUESTED	queue	Retail Support
+example-session	900	TRANSFER_ACCEPTED	transferId	example-transfer
+example-session	900	TRANSFER_ACCEPTED	queue	Retail Support
+example-session	900	TRANSFER_ACCEPTED	orderId	DG-1042
+example-session	900	TRANSFER_ACCEPTED	issue	Missing order
+example-session	900	TRANSFER_ACCEPTED	attempts	Lookup attempted
