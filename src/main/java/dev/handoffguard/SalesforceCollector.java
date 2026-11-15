@@ -78,4 +78,32 @@ public final class SalesforceCollector {
     return result;
   }
 
+  /**
+   * Flow records must be created at the escalation-request point. Multiple
+   * markers are intentionally ambiguous until an individual attempt is chosen.
+   */
+  public TransferMonitor.Report monitor(String sessionId,Set<String> humanIds,Instant observedAt)throws Exception{
+    if(sessionId==null||!sessionId.matches("[a-zA-Z0-9]{15}([a-zA-Z0-9]{3})?"))
+      throw new IllegalArgumentException("Invalid session ID");
+    if(humanIds==null||humanIds.isEmpty())throw new IllegalArgumentException("Human allowlist required");
+    if(!"true".equalsIgnoreCase(System.getenv().getOrDefault("SF_FLOW_MARKERS_ENABLED","false")))
+      throw new IllegalStateException("Salesforce Flow transfer marker collection not enabled");
+    String bearer=token();
+    List<Map<String,Object>> sessions=query(bearer,"SELECT Id FROM MessagingSession WHERE Id = '"+sessionId+"' LIMIT 1");
+    if(sessions.size()!=1)throw new IllegalArgumentException("MessagingSession not found");
+    List<Map<String,Object>> source=query(bearer,
+      "SELECT Id, MessagingSessionId__c, TransferStartedAt__c FROM HandoffGuardTransfer__c WHERE MessagingSessionId__c = '"+sessionId+"' ORDER BY CreatedDate DESC LIMIT 2");
+    List<TransferMonitor.Marker> markers=new ArrayList<>();
+    for(Map<String,Object> m:source)markers.add(new TransferMonitor.Marker(
+      JsonReader.string(m.get("Id")),JsonReader.string(m.get("MessagingSessionId__c")),time(m.get("TransferStartedAt__c"))));
+    if(markers.size()!=1)return TransferMonitor.assess(sessionId,markers,List.of(),humanIds,observedAt,Duration.ofSeconds(60),false);
+    List<Map<String,Object>> rows=query(bearer,
+      "SELECT Id, WorkItemId, UserId, AcceptDateTime FROM AgentWork WHERE WorkItemId = '"+sessionId+"' ORDER BY CreatedDate ASC");
+    List<AcceptanceVerifier.Work> works=new ArrayList<>();
+    for(Map<String,Object> r:rows)works.add(new AcceptanceVerifier.Work(
+      JsonReader.string(r.get("Id")),JsonReader.string(r.get("WorkItemId")),
+      JsonReader.string(r.get("UserId")),time(r.get("AcceptDateTime"))));
+    return TransferMonitor.assess(sessionId,markers,works,humanIds,observedAt,Duration.ofSeconds(60),true);
+  }
+
 }
