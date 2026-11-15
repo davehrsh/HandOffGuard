@@ -22,8 +22,8 @@ In **Salesforce Setup > Object Manager > Create > Custom Object**:
 - Ensure the OAuth Run As integration user has read access to the object and fields.
 
 Add custom fields:
-- **Messaging Session ID**: Text(18), required, API name `MessagingSessionId__c`
-- **Transfer Started At**: Date/Time, required, API name `TransferStartedAt__c`
+- **Messaging Session ID**: Text(18), required, API name `Messaging_Session_ID__c`
+- **Transfer Started At**: Date/Time, required, API name `Transfer_Started_At__c`
 
 Avoid storing customer messages, order details, phone numbers, secrets or tokens in the audit record.
 
@@ -31,8 +31,8 @@ Avoid storing customer messages, order details, phone numbers, secrets or tokens
 
 Before the element that initiates route-to-human escalation, use Flow Builder's **Create Records** action to insert exactly one `HandoffGuardTransfer__c` record.
 
-- `MessagingSessionId__c` = the **real Salesforce MessagingSession.Id** from the running conversation context (do not hardcode a historical ID).
-- `TransferStartedAt__c` = `$Flow.CurrentDateTime` at that escalation branch.
+- `Messaging_Session_ID__c` = the **real Salesforce MessagingSession.Id** from the running conversation context (do not hardcode a historical ID).
+- `Transfer_Started_At__c` = `$Flow.CurrentDateTime` at that escalation branch.
 - For repeated handoffs, create separate records; the initial monitor refuses to compute a single-session latency if more than one attempt is present.
 - Add a fault path and test to ensure instrumenting the Flow does not accidentally break routing.
 - Don't use `MessagingSession.CreatedDate` or `AgentWork.CreatedDate` as a shortcut; neither necessarily identifies the AI-to-human escalation request.
@@ -43,7 +43,7 @@ Publish/activate the updated Flow only after testing in the Salesforce Developer
 
 ### C. Grant read access
 
-Grant the External Client App's Run As user object **Read** permission and field-level visibility to `HandoffGuardTransfer__c.MessagingSessionId__c` and `TransferStartedAt__c`. Do not grant write access to the integration user. Flow's execution permissions are separate.
+Grant the External Client App's Run As user object **Read** permission and field-level visibility to `HandoffGuardTransfer__c.Messaging_Session_ID__c` and `Transfer_Started_At__c`. Do not grant write access to the integration user. Flow's execution permissions are separate.
 
 ## Enable the read-only Cloud Run collector
 
