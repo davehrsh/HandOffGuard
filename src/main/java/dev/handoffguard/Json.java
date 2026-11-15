@@ -4,6 +4,7 @@ import java.util.*;
 public final class Json {
     public static String encode(Object value) {
         if(value==null) return "null";
+        if(value instanceof java.time.temporal.TemporalAccessor) return quote(value.toString());
         if(value instanceof String || value instanceof Enum<?>) return quote(value.toString());
         if(value instanceof Number || value instanceof Boolean) return value.toString();
         if(value instanceof Map<?,?> m) return "{"+String.join(",",m.entrySet().stream().map(e->quote(e.getKey().toString())+":"+encode(e.getValue())).toList())+"}";
