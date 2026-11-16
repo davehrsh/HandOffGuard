@@ -25,7 +25,8 @@ picker.addEventListener("change",async()=>{
       cell(tr,r.transferStartedAt);
       const tag=cell(tr,r.status);tag.className=r.status==="TIMED_OUT"?"warn":r.status==="ACCEPTED_ON_TIME"?"ok":"";
       cell(tr,r.latencySeconds==null?"—":r.latencySeconds+" s");
-      cell(tr,r.provenance);
+      const evidence=cell(tr,r.provenance==="SALESFORCE_FLOW_MARKER_AND_AGENTWORK"?"Salesforce Flow + AgentWork":r.provenance);
+      evidence.title=r.provenance||"";
       rows.append(tr);
     }
     metrics.textContent=`Sessions: ${raw.results.length}  ·  Accepted: ${accepted}  ·  Timed out: ${timeout}  ·  Pending: ${pending}  ·  Insufficient: ${missing}`;
