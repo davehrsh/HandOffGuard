@@ -108,4 +108,25 @@ public final class SalesforceCollector {
     return TransferMonitor.assess(sessionId,markers,works,humanIds,observedAt,Duration.ofSeconds(60),true);
   }
 
+  /**
+   * Find recently created Flow transfer markers and evaluate each distinct
+   * MessagingSession with the source-of-truth transfer timestamp.
+   * Ambiguous multi-attempt sessions intentionally remain insufficient.
+   */
+  public List<TransferMonitor.Report> monitorRecent(int limit,Set<String> humanIds,Instant observedAt)throws Exception{
+    if(limit<1||limit>100)throw new IllegalArgumentException("Limit must be 1..100");
+    if(humanIds==null||humanIds.isEmpty())throw new IllegalArgumentException("Human allowlist required");
+    String bearer=token();
+    List<Map<String,Object>> markers=query(bearer,
+      "SELECT Id, Messaging_Session_ID__c FROM HandoffGuardTransfer__c WHERE CreatedDate = LAST_N_DAYS:1 ORDER BY CreatedDate DESC LIMIT "+limit);
+    Set<String> seen=new LinkedHashSet<>();
+    List<TransferMonitor.Report> reports=new ArrayList<>();
+    for(Map<String,Object> marker:markers) {
+      String sessionId=JsonReader.string(marker.get("Messaging_Session_ID__c"));
+      if(!SalesforceId.valid(sessionId)||!seen.add(SalesforceId.shortId(sessionId)))continue;
+      reports.add(monitor(sessionId,humanIds,observedAt));
+    }
+    return reports;
+  }
+
 }
