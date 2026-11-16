@@ -118,7 +118,7 @@ public final class SalesforceCollector {
     if(humanIds==null||humanIds.isEmpty())throw new IllegalArgumentException("Human allowlist required");
     String bearer=token();
     List<Map<String,Object>> markers=query(bearer,
-      "SELECT Id, Messaging_Session_ID__c FROM HandoffGuardTransfer__c WHERE CreatedDate = LAST_N_DAYS:1 ORDER BY CreatedDate DESC LIMIT "+limit);
+      "SELECT Id, Messaging_Session_ID__c FROM HandoffGuardTransfer__c WHERE CreatedDate >= "+java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd\u0027T\u0027HH:mm:ss\u0027Z\u0027").withZone(java.time.ZoneOffset.UTC).format(observedAt.minus(Duration.ofHours(1)))+" ORDER BY CreatedDate DESC LIMIT "+limit);
     Set<String> seen=new LinkedHashSet<>();
     List<TransferMonitor.Report> reports=new ArrayList<>();
     for(Map<String,Object> marker:markers) {
