@@ -9,3 +9,4 @@ java -cp build/classes dev.handoffguard.SalesforceVerifierRegressionTest
 java -cp build/classes dev.handoffguard.JsonReaderTest
 
 java -cp build/classes dev.handoffguard.TransferMonitorTest
+java -cp build/classes dev.handoffguard.MonitoringJobTest
