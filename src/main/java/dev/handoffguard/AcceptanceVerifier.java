@@ -24,7 +24,7 @@ public final class AcceptanceVerifier {
         e.permittedHumanUserIds().isEmpty() || e.agentWorks() == null || e.transferStartedAt() == null || e.observedAt() == null || e.observedAt().isBefore(e.transferStartedAt()))
       return result(e, Status.INSUFFICIENT_EVIDENCE, null, null, "Missing correlation, provenance, permitted human IDs or transfer start");
     List<Work> accepted = e.agentWorks().stream()
-        .filter(w -> w != null && e.sessionId().equals(w.workItemId()))
+        .filter(w -> w != null && SalesforceId.same(e.sessionId(),w.workItemId()))
         .filter(w -> e.permittedHumanUserIds().contains(w.userId()))
         .filter(w -> w.acceptedAt() != null && !w.acceptedAt().isBefore(e.transferStartedAt()) && !w.acceptedAt().isAfter(e.observedAt()))
         .sorted(Comparator.comparing(Work::acceptedAt)).toList();
