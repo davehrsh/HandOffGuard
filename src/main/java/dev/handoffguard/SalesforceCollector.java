@@ -91,14 +91,16 @@ public final class SalesforceCollector {
     String bearer=token();
     List<Map<String,Object>> sessions=query(bearer,"SELECT Id FROM MessagingSession WHERE Id = '"+sessionId+"' LIMIT 1");
     if(sessions.size()!=1)throw new IllegalArgumentException("MessagingSession not found");
+    String canonicalSessionId=JsonReader.string(sessions.get(0).get("Id"));
+    String shortSessionId=SalesforceId.shortId(canonicalSessionId);
     List<Map<String,Object>> source=query(bearer,
-      "SELECT Id, Messaging_Session_ID__c, Transfer_Started_At__c FROM HandoffGuardTransfer__c WHERE Messaging_Session_ID__c = '"+sessionId+"' ORDER BY CreatedDate DESC LIMIT 2");
+      "SELECT Id, Messaging_Session_ID__c, Transfer_Started_At__c FROM HandoffGuardTransfer__c WHERE Messaging_Session_ID__c = '"+shortSessionId+"' ORDER BY CreatedDate DESC LIMIT 2");
     List<TransferMonitor.Marker> markers=new ArrayList<>();
     for(Map<String,Object> m:source)markers.add(new TransferMonitor.Marker(
       JsonReader.string(m.get("Id")),JsonReader.string(m.get("Messaging_Session_ID__c")),time(m.get("Transfer_Started_At__c"))));
     if(markers.size()!=1)return TransferMonitor.assess(sessionId,markers,List.of(),humanIds,observedAt,Duration.ofSeconds(60),false);
     List<Map<String,Object>> rows=query(bearer,
-      "SELECT Id, WorkItemId, UserId, AcceptDateTime FROM AgentWork WHERE WorkItemId = '"+sessionId+"' ORDER BY CreatedDate ASC");
+      "SELECT Id, WorkItemId, UserId, AcceptDateTime FROM AgentWork WHERE WorkItemId = '"+canonicalSessionId+"' ORDER BY CreatedDate ASC");
     List<AcceptanceVerifier.Work> works=new ArrayList<>();
     for(Map<String,Object> r:rows)works.add(new AcceptanceVerifier.Work(
       JsonReader.string(r.get("Id")),JsonReader.string(r.get("WorkItemId")),
