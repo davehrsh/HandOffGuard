@@ -1,0 +1,35 @@
+name: Publish verified v1.0.0 release
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  release:
+    if: github.event.head_commit.message == 'release: publish v1.0.0'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Run regression and UI syntax validation
+        run: |
+          sh scripts/test.sh
+          bash -n scripts/setup-monitoring-gcp.sh
+          node --check web/history.js
+          docker build -t handoffguard:release .
+      - name: Publish GitHub v1.0.0 tag and release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view v1.0.0 >/dev/null 2>&1; then
+            echo "v1.0.0 already exists; not overwriting"
+            exit 0
+          fi
+          gh release create v1.0.0 --target "${GITHUB_SHA}" --title "HandoffGuard v1.0.0" --notes-file docs/RELEASE_v1.0.0.md
