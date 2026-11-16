@@ -37,6 +37,14 @@ public final class MonitoringJob {
     snapshot.put("results",result);
     String json=Json.encode(snapshot);
     System.out.println(json); // Cloud Logging records without transcripts or Salesforce credentials
+    // Structured Cloud Logging event for optional log-based alerts; no transcripts.
+    int breached=counts.getOrDefault("TIMED_OUT",0)+counts.getOrDefault("ACCEPTED_LATE",0);
+    System.out.println(Json.encode(Map.of(
+      "severity",breached>0?"ERROR":"INFO",
+      "event","HANDOFFGUARD_MONITOR_SUMMARY",
+      "breached",breached,
+      "sessionsChecked",result.size(),
+      "generatedAt",now.toString())));
     String bucket=env.getOrDefault("MONITOR_GCS_BUCKET","");
     if(!bucket.isBlank()) {
       String object="snapshots/"+now.toString().replace(":","-")+".json";
