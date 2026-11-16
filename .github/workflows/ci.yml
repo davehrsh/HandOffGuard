@@ -8,12 +8,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
       - name: Compile and run all regression suites
         run: sh scripts/test.sh
+      - name: Validate deployment script and viewer JavaScript
+        run: |
+          bash -n scripts/setup-monitoring-gcp.sh
+          node --check web/history.js
       - name: Validate Docker image builds
         run: docker build -t handoffguard:ci .
