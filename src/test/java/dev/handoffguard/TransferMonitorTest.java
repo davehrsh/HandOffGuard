@@ -30,7 +30,7 @@ public final class TransferMonitorTest {
     String session15=SESSION.substring(0,15);
     String session18=SESSION;
     if(!SalesforceId.same(session15,session18))throw new AssertionError("15-to-18 session mismatch");
-    if(SalesforceId.same(session15,"0Mwg7000002VwGHCXX"))throw new AssertionError("wrong session accepted");
+    if(SalesforceId.same(session15,"0Mwg7000002VwGICAS"))throw new AssertionError("wrong session accepted");
     var marker15=new TransferMonitor.Marker("a00Test123456789",session15,START);
     var work18=new AcceptanceVerifier.Work("human18",session18,HUMAN,START.plusSeconds(44));
     expect(AcceptanceVerifier.Status.ACCEPTED_ON_TIME,
