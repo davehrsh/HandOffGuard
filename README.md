@@ -52,7 +52,7 @@ Later, an automated monitoring snapshot on **2026-11-16 07:19:56 UTC** independe
 - **`ACCEPTED_ON_TIME`** — session `0Mwg7000002Y5yb`, Flow transfer start **07:14:08 UTC**, permitted human accepted in **12 seconds** (AgentWork `0Bzg7000002Y0cMCAS`).
 - **`TIMED_OUT`** — session `0Mwg7000002Y6Mn`, Flow transfer start **07:15:33 UTC**, no permitted human acceptance by **07:19:56 UTC**.
 
-The Cloud Run Job executed and saved `gs://handoffguard-snapshots-614664795142/snapshots/2026-11-16T07-19-56.691794651Z.json`. Screenshots also show an enabled 10-minute Cloud Scheduler executing the job and emitting breach logs. These are **controlled test cases**, not representative production service levels. The Cloud Monitoring alert filter has been prepared, but an enabled policy and delivered notification have not yet been confirmed.
+The Cloud Run Job executed and saved `gs://handoffguard-snapshots-614664795142/snapshots/2026-11-16T07-19-56.691794651Z.json`. Screenshots also show an enabled 10-minute Cloud Scheduler executing the job and emitting breach logs. These are **controlled test cases**, not representative production service levels. **End-to-end alert notification verified:** the Google Cloud Monitoring log-based policy `HandoffGuard - Human Handoff SLA Breach` fired with severity Error on November 16, 2026 (07:38 UTC incident start), and an alert email was received at 1:08 PM IST. [View alert policy](https://console.cloud.google.com/monitoring/alerting/policies/17034850071369404290?project=handoffguard). This confirms email delivery for a matching breach event, not a 60-second notification delivery SLA.
 
 ## Status semantics
 
