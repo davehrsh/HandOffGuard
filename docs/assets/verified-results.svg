@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="350" viewBox="0 0 1200 350" role="img" aria-labelledby="title desc">
+<title id="title">HandoffGuard verified Salesforce handoff outcomes</title>
+<desc id="desc">Two controlled Salesforce Developer Edition tests on November 16, 2026: one accepted on time in 12 seconds, one timed out without a permitted human acceptance by observation.</desc>
+<rect width="1200" height="350" rx="22" fill="#10252b"/>
+<text x="46" y="56" font-family="Arial,sans-serif" font-size="20" letter-spacing="3" fill="#9bdabc" font-weight="bold">VERIFIED SALESFORCE EVIDENCE</text>
+<text x="46" y="91" font-family="Arial,sans-serif" font-size="17" fill="#acc1bd">Controlled Developer Edition tests · 16 Nov 2026 · 60-second acceptance SLA</text>
+<rect x="44" y="121" width="539" height="170" rx="13" fill="#193d36" stroke="#438d70" stroke-width="2"/>
+<rect x="617" y="121" width="539" height="170" rx="13" fill="#403030" stroke="#9a5b56" stroke-width="2"/>
+<text x="75" y="158" font-family="Arial,sans-serif" font-size="18" fill="#a4dcc2">PERMITTED HUMAN ACCEPTANCE</text>
+<text x="75" y="220" font-family="Arial,sans-serif" font-size="51" font-weight="bold" fill="#e2f8ed">12 seconds</text>
+<text x="75" y="259" font-family="Arial,sans-serif" font-size="17" fill="#b5d9c9">ACCEPTED_ON_TIME</text>
+<text x="649" y="158" font-family="Arial,sans-serif" font-size="18" fill="#edb8b3">HUMAN ACCEPTANCE NOT FOUND</text>
+<text x="649" y="220" font-family="Arial,sans-serif" font-size="51" font-weight="bold" fill="#fff0ed">TIMED_OUT</text>
+<text x="649" y="259" font-family="Arial,sans-serif" font-size="17" fill="#ecc7c4">After 60-second deadline</text>
+<text x="46" y="323" font-family="Arial,sans-serif" font-size="15" fill="#abc5be">Provenance: Salesforce Flow marker + AgentWork · Results are from 2 controlled tests, not production success rates.</text>
+</svg>
