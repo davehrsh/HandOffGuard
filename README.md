@@ -8,6 +8,8 @@ HandoffGuard is an independent Java 21 reliability-verification project for Sale
 
 ## Live demo and architecture
 
+**Architecture diagram:** [View the system flow and trust boundaries](docs/ARCHITECTURE.md) · **Release notes:** [v1.0.0](docs/RELEASE_v1.0.0.md) · **Verification checklist:** [Evidence-backed v1.0 results](docs/V1_RELEASE_CHECKLIST.md)
+
 - Public simulator: https://handoffguard-614664795142.asia-south1.run.app
 - Local-only evidence viewer: https://handoffguard-614664795142.asia-south1.run.app/history (import a JSON snapshot you download from private Google Cloud Storage)
 - GitHub Actions: [Java 21 CI](.github/workflows/ci.yml)
@@ -102,6 +104,8 @@ The simulator's 500ms P95 is **synthetic**, not a measured Salesforce handoff la
 
 ## Documentation
 
+- [Architecture diagram and trust boundaries](docs/ARCHITECTURE.md)
+- [v1.0.0 changelog and release evidence](docs/RELEASE_v1.0.0.md)
 - [Salesforce External Client App and live API](docs/SALESFORCE_LIVE.md)
 - [Source-of-truth Flow transfer timestamp capture](docs/SALESFORCE_FLOW_MARKERS.md)
 - [Cloud scheduled monitoring, GCS snapshots, IAM and alerts](docs/MONITORING_OPERATIONS.md)
