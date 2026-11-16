@@ -21,7 +21,7 @@ public final class TransferMonitor {
         "SALESFORCE_FLOW_MARKER_AND_AGENTWORK");
     Marker marker=markers.get(0);
     if(marker==null||marker.id()==null||marker.id().isBlank()||
-        !Objects.equals(marker.sessionId(),sessionId)||marker.startedAt()==null)
+        !SalesforceId.same(marker.sessionId(),sessionId)||marker.startedAt()==null)
       return new Report(sessionId,null,null,observation,AcceptanceVerifier.Status.INSUFFICIENT_EVIDENCE,
         null,null,"Invalid transfer marker or missing Salesforce timestamp",
         "SALESFORCE_FLOW_MARKER_AND_AGENTWORK");
