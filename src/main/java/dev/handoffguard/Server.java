@@ -118,7 +118,7 @@ public class Server {
         server.createContext("/",x->{
             if(!x.getRequestMethod().equals("GET")){send(x,405,"text/plain","Use GET");return;}
             String path=x.getRequestURI().getPath();
-            Map<String,String> allowed=Map.of("/","index.html","/index.html","index.html","/app.js","app.js","/style.css","style.css");
+            Map<String,String> allowed=Map.of("/","index.html","/index.html","index.html","/app.js","app.js","/style.css","style.css","/history","history.html","/history.html","history.html","/history.js","history.js");
             String file=allowed.get(path);
             if(file==null){send(x,404,"text/plain","Not found");return;}
             String mime=file.endsWith(".js")?"text/javascript":file.endsWith(".css")?"text/css":"text/html";
