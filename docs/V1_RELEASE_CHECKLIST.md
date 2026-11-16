@@ -15,16 +15,16 @@
 - [x] Cloud Monitoring **log alert configured, enabled and fired**: `HandoffGuard - Human Handoff SLA Breach`, filter on event and `breached>0`; notification minimum 1 hour, autoclose 7 days.
 - [x] MonitoringJob, local-only private snapshot viewer, IAM setup script, operational docs and portfolio README committed.
 
-## Still awaiting external confirmation
+## Final manual validations
 
 - [x] Cloud Monitoring alert policy successfully **saved and enabled** (policy `17034850071369404290`).
 - [x] Email notification channel attached to alert policy, as evidenced by the delivered Google Cloud alert email.
 - [x] **Actual email notification delivered**: Google Cloud Alerting message at 1:08 PM IST, November 16, 2026, for a log alert with start time `2026-11-16 07:38 UTC`, incident `0.of2u6isnjmts`, severity Error.
-- [ ] Private `/history` viewer manually tested with downloaded live snapshot JSON.
+- [x] Private `/history` viewer manually tested with the downloaded `2026-11-16T07-19-56.691794651Z.json` live snapshot. Screenshot confirms two sessions, one accepted (12 s) and one timed out; local-only analysis indicator displayed.
 - [x] Portfolio README updated with verified successful/timeout outcomes and alert evidence.
 
 ## Evidence and qualification
 
 The two-session result is **controlled test evidence**, not a representative success-rate sample. `TIMED_OUT` means no permitted human acceptance was observed by the snapshot timestamp, not that acceptance was permanently impossible. A 10-minute polling schedule does **not** guarantee alert delivery within 60 seconds. Cloud Monitoring's one-hour frequency suppresses repeated notifications but does not deduplicate per session.
 
-Source: user-supplied Cloud Shell output and Cloud Logging screenshots, November 16, 2026. Review exact cloud execution records and snapshot files in the project for operational evidence. Email notification verified by user-supplied alert email on November 16, 2026.
+Source: user-supplied Cloud Shell output and Cloud Logging screenshots, November 16, 2026. Review exact cloud execution records and snapshot files in the project for operational evidence. Email notification verified by user-supplied alert email on November 16, 2026. Historical evidence viewer verified by user-supplied browser screenshot, November 16, 2026.
