@@ -37,6 +37,12 @@ Customer → Salesforce Agentforce → Omni-Channel escalation Flow
                         Cloud Scheduler              /history viewer
 ```
 
+## Verified outcomes at a glance
+
+![Two Salesforce Developer Edition handoff outcomes: one accepted in 12 seconds, one timed out](docs/assets/verified-results.svg)
+
+This **rendered summary** is based on the real audit snapshot; it is not a raw Salesforce screenshot. For source-based media capture guidance, see [Demo walkthrough](docs/DEMO_WALKTHROUGH.md).
+
 ## Verified Salesforce evidence
 
 A controlled Developer Edition test created an actual Flow audit marker:
