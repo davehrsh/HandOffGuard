@@ -1,90 +1,113 @@
 # HandoffGuard
 
-**Did the customer actually reach a human?** A Java reliability workbench that verifies handoff outcomes from event evidence, rather than trusting a chatbot's transfer message.
+**An AI saying "I'll transfer you" is not proof that a human accepted the conversation.**
 
-## Current status
+HandoffGuard is an independent Java 21 reliability-verification project for Salesforce Agentforce and Omni-Channel. It correlates **actual Flow-captured escalation timestamps** with **AgentWork human acceptance** to classify whether a handoff met a 60-second target. It also includes a clearly separated deterministic simulator with six retail support scenarios.
 
-Working local MVP: Java 21 engine, six retail scenarios, fault injection, assertion-level evidence, responsive dashboard, downloadable JSON reports and regression tests. **All dashboard runs are simulations. Salesforce is not connected.** A Spring Boot adapter is included, but was not compiled in the authoring environment because Maven Central was unreachable; the dependency-free Java version was compiled and tested. The GitHub workflow will build both after you push the project.
+> Independent portfolio project. Not an official Salesforce product. Never claim simulated measurements as production latency. All Salesforce data shown in this README is from controlled Developer Edition tests.
 
-This is an independent portfolio project, not a Salesforce product or a proven fix in a customer's org. There is no LLM call, PostgreSQL persistence, live Salesforce collector, Playwright collector, or OpenTelemetry export yet. Deliberately avoid claiming those on a resume until implemented and measured.
+## Live demo and architecture
 
-## Run now (Java 21 JDK)
+- Public simulator: https://handoffguard-614664795142.asia-south1.run.app
+- Local-only evidence viewer: https://handoffguard-614664795142.asia-south1.run.app/history (import a JSON snapshot you download from private Google Cloud Storage)
+- GitHub Actions: [Java 21 CI](.github/workflows/ci.yml)
+- Deployment: Docker on Google Cloud Run, region `asia-south1`
+- Private Salesforce integration: OAuth client credentials, read-only SOQL, Cloud Secret Manager for keys
 
-macOS/Linux/Git Bash:
+```text
+Customer → Salesforce Agentforce → Omni-Channel escalation Flow
+                                          │
+                          Flow writes HandoffGuardTransfer__c
+                          (MessagingSession ID + CurrentDateTime)
+                                          │
+                      Salesforce AgentWork records human acceptance
+                                          │
+                                          ▼
+                         HandoffGuard Java verifier (private API)
+                             ├─ 60-second SLO verdict
+                             ├─ human-identity allowlist
+                             ├─ 15/18-char Salesforce ID correlation
+                             ├─ missing / late / pending outcomes
+                             └─ provenance labels
+                                          │
+                      Cloud Run Job (optional) → private GCS snapshots
+                                ▲                         │
+                        Cloud Scheduler              /history viewer
+```
+
+## Verified Salesforce evidence
+
+A controlled Developer Edition test created an actual Flow audit marker:
+
+- Messaging Session: `0Mwg7000002Y2cX` (15-character Flow value; Salesforce REST may use 18 characters)
+- Transfer marker: `a00g700002Y6rHxAAJ`
+- Flow transfer start: **2026-11-16 05:50:44 UTC**
+- Observation: **2026-11-16 06:05:48 UTC**
+- Human acceptance: **not found**; the sole observed AgentWork was assigned to the Automated Process identity and must not count as a person.
+- Result: **`TIMED_OUT`** at the 60-second deadline. This is a successful *negative test*, not a successful human handoff.
+- Provenance: `SALESFORCE_FLOW_MARKER_AND_AGENTWORK`
+
+An earlier successful manual Salesforce handoff was observed, but did not have independently captured transfer-start evidence. Do not claim it passed the 60-second requirement. A new controlled **ACCEPTED_ON_TIME** live test remains outstanding.
+
+## Status semantics
+
+| Verdict | What it means |
+| --- | --- |
+| `ACCEPTED_ON_TIME` | Permitted human AgentWork acceptance happened within 60 seconds of the Flow timestamp |
+| `ACCEPTED_LATE` | Real human accepted, but later than 60 seconds |
+| `PENDING` | No human acceptance recorded and deadline has not elapsed |
+| `TIMED_OUT` | Deadline elapsed with no permitted human acceptance in the available full AgentWork query |
+| `INSUFFICIENT_EVIDENCE` | Missing/ambiguous Flow marker, missing timestamp, incomplete evidence or missing allowlist |
+
+The verifier checks individual session correlation and ignores Salesforce Automated Process work. `TIMED_OUT` is assessed at observation time; it does **not** imply a human can never accept later.
+
+## APIs
+
+| Endpoint | Access | Purpose |
+| --- | --- | --- |
+| `GET /api/health` | Public | Basic server health and feature flag (not a Salesforce connection test) |
+| `POST /api/run?profile=fixed` | Public | Deterministic **simulator** run |
+| `POST /api/run?profile=broken` | Public | Failure-injected **simulator** run |
+| `POST /api/salesforce/inspect` | API key | Live human acceptance facts, **no guessed SLO** |
+| `POST /api/salesforce/monitor` | API key | Live 60-second assessment from Flow transfer marker |
+| `POST /api/salesforce/verify` | API key | Historical compatibility; manually entered transfer time is **unverified** |
+
+Protected endpoints require `X-HandoffGuard-Key`. Never put this key in the public web UI, repository, or client-side JavaScript. The public dashboard does **not** call the private Salesforce endpoints.
+
+## Scheduled monitoring and historical evidence
+
+`MonitoringJob` (same Java image, separate Cloud Run Job) can scan newly created Flow markers, evaluate their sessions, emit structured Cloud Logging summaries, and save sanitized JSON snapshots into a **private** Google Cloud Storage bucket. `/history` provides local-only viewing of downloaded snapshots; it does not fetch files from Cloud Storage or contact Salesforce.
+
+**Scheduling and storage require an additional Google Cloud setup step**; they are not automatically activated simply by merging this code. The opt-in installer is `scripts/setup-monitoring-gcp.sh` and is described in [Monitoring operations](docs/MONITORING_OPERATIONS.md). It creates a separate execution identity, an IAM-authenticated Cloud Scheduler trigger, an object-creator-only private snapshot bucket, and a 30-day retention policy. Default schedule: every **10 minutes**. This monitors a 60-second deadline, but detecting a breach can take up to the scheduler interval plus processing time. It is not a 60-second real-time alarm.
+
+The job's logs include an `ERROR` summary when it finds `TIMED_OUT` or `ACCEPTED_LATE` outcomes. Notification channels / alert policies are **optional and must be configured explicitly**.
+
+## Develop and test
+
+Java 21:
 
 ```sh
-./scripts/test.sh
-./scripts/run.sh
+sh scripts/test.sh
+sh scripts/run.sh
 ```
 
-Open http://localhost:8080. Run the broken configuration, inspect a failed check, then run the corrected configuration. Export either report.
+Open http://localhost:8080. Docker and GitHub Actions compile the Java code in the cloud so no software installation is necessary on a work-managed laptop.
 
-Windows PowerShell, from the project folder:
+The simulator's 500ms P95 is **synthetic**, not a measured Salesforce handoff latency.
 
-```powershell
-New-Item -ItemType Directory -Force build/classes
-javac -d build/classes (Get-ChildItem src/main/java/dev/handoffguard/*.java).FullName (Get-ChildItem src/test/java/dev/handoffguard/*.java).FullName
-java -cp build/classes dev.handoffguard.EngineTest
-java -cp build/classes dev.handoffguard.Server
-```
+## Documentation
 
-Optional Spring adapter (Java 21 + Maven 3.6.3+ and network access):
+- [Salesforce External Client App and live API](docs/SALESFORCE_LIVE.md)
+- [Source-of-truth Flow transfer timestamp capture](docs/SALESFORCE_FLOW_MARKERS.md)
+- [Cloud scheduled monitoring, GCS snapshots, IAM and alerts](docs/MONITORING_OPERATIONS.md)
+- [Original engineering log and simulator design](docs/DEVELOPMENT_LOG.md)
 
-```sh
-mvn -f spring/pom.xml spring-boot:run
-```
+## Engineering boundaries
 
-Stop the local server first; both use port 8080. The dependency-free server binds to loopback; the Spring adapter is an unauthenticated development service and is not ready for public deployment.
+- **Not a handoff repair mechanism:** HandoffGuard verifies, detects and reports; it does not automatically dispatch a human.
+- **Not real-time at 60 seconds:** Cloud Scheduler polling creates detection delay.
+- **Not production-ready:** the public Cloud Run service uses a shared API key for protected endpoints. Production use should split private collector into an IAM-only service with restricted ingress and add data retention/audit controls.
+- **No cross-attempt guesses:** multiple transfer markers for one session return insufficient evidence; future versions should use an explicit attempt ID to correlate repeated escalations.
+- **No customer transcripts in logs or snapshots.** The system records session correlation identifiers, work IDs, timestamps and classification only.
 
-## What it checks
-
-1. Explicit human request results in receiving-side acceptance.
-2. Two order-service failures trigger escalation without unbounded retries.
-3. No queue capacity creates exactly one follow-up case and an honest status message.
-4. Order ID, issue and attempted steps survive the handoff.
-5. Duplicate retries create one acceptance, using an idempotency key in the simulator.
-6. Order support reaches the Retail Support queue.
-
-Checks also enforce session correlation, a 5-second simulated handoff SLO and acceptance after the transfer request. Current context checks validate presence, not semantic correctness. The time measurements are synthetic fixture timestamps, not load-test results or real Salesforce performance.
-
-## Design
-
-`Engine.verify()` is independent of `RetailSimulator`. It accepts normalized events, filters by session, orders by event time and applies deterministic assertions. Removing an acceptance event cannot be concealed by a customer-facing message. The simulator implements routing, unavailable queues, context projection and idempotent acceptance; broken mode injects faults in these behaviors.
-
-- `src/main/java/dev/handoffguard/Engine.java`: domain records, assertion engine and fake transport.
-- `Server.java`: dependency-free local REST/static server.
-- `EvidenceCli.java`: offline evidence import.
-- `web/`: framework-free, responsive dashboard; renders API responses using textContent.
-- `spring/`: optional Spring Boot HTTP adapter over the same engine.
-- `src/test/`: regression and mutation cases, including missing evidence and cross-session evidence.
-- `.github/workflows/ci.yml`: regression reports and Spring packaging.
-
-Runs are not persisted by the server. Export JSON to retain a run. All order/customer examples are synthetic.
-
-## API
-
-`POST /api/run?profile=broken` or `profile=fixed` returns a run, checks and events.
-`GET /api/health` reports `salesforceConnected: false`.
-Invalid profiles return HTTP 400. The local server rejects GET requests to the run endpoint.
-
-## Import normalized evidence
-
-Compile using `scripts/test.sh`, then:
-
-```sh
-java -cp build/classes dev.handoffguard.EvidenceCli CONTEXT example-session docs/example-evidence.tsv
-```
-
-Input TSV columns: `session`, `atMs`, `type`, `key`, `value`. One attribute per row; rows sharing session/time/type form one event. Do not use literal tabs/newlines inside values. The collector must ensure distinct same-type events have distinct timestamps; this v0 format cannot distinguish identical timestamp/type events. A failed assertion exits 1, successful verification exits 0; invalid input throws a nonzero error. Imported evidence is labeled `IMPORTED_UNVERIFIED`, never automatically certified as live Salesforce evidence.
-
-## Why Salesforce
-
-Salesforce's Agentforce DX documentation says preview does not support escalation and instructs developers to test the published agent through the desired endpoint. This project targets that boundary: assertions about what the receiving side actually observes.
-
-- https://developer.salesforce.com/docs/ai/agentforce/guide/agent-dx-nga-preview.html
-- https://help.salesforce.com/s/articleView?id=ai.agent_testing_center_considerations.htm&language=en_US&type=5
-- https://architect.salesforce.com/docs/architect/well-architected/guide/agentic-enterprise-reliability.html
-
-Documentation reviewed November 13, 2026; verify current behavior for the target org/release. This project complements existing testing tools; it does not establish that Salesforce lacks all end-to-end testing capability.
-
-See `docs/SALESFORCE_INTEGRATION.md` for the next milestone and `docs/DEVELOPMENT_LOG.md` for validation and review notes.
+© Independent engineering demonstration. Salesforce/Agentforce names are used solely to identify integration targets.
