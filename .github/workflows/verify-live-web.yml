@@ -1,0 +1,26 @@
+name: Verify live Cloud Run dashboard revision
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deployed HTML contains v1 table styling
+        run: |
+          set -euo pipefail
+          BASE="https://handoffguard-614664795142.asia-south1.run.app"
+          curl --fail --silent --show-error --max-time 25 --retry 4 --retry-delay 4 "$BASE/history" -o history.html
+          grep -F 'min-width:890px' history.html
+          grep -F 'table-layout:fixed' history.html
+          echo "Historical viewer styling verified on live Cloud Run."
+      - name: Check deployed JavaScript contains readable evidence label
+        run: |
+          set -euo pipefail
+          BASE="https://handoffguard-614664795142.asia-south1.run.app"
+          curl --fail --silent --show-error --max-time 25 --retry 4 --retry-delay 4 "$BASE/history.js" -o history.js
+          grep -F 'Salesforce Flow + AgentWork' history.js
+          echo "Historical evidence label verified on live Cloud Run."
