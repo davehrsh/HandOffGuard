@@ -54,19 +54,24 @@ async function loadSalesforceEvidence(){
   target.append(element('p','Snapshot recorded: '+generated.toLocaleString()+' · '+data.results.length+' assessed handoffs · 60-second acceptance SLA','evidence-meta'));
   if(data.results.length===0){target.append(element('p','The latest monitoring snapshot contains no assessed handoffs.','evidence-empty'));return;}
   const allowed=new Set(['ACCEPTED_ON_TIME','ACCEPTED_LATE','PENDING','TIMED_OUT','INSUFFICIENT_EVIDENCE']);
+  const grid=element('div',undefined,'evidence-grid');
   for(const [i,session] of data.results.entries()){
    if(!allowed.has(session.status))throw Error('Invalid assessment result');
-   const card=element('div',undefined,'check');
+   const card=element('div',undefined,'evidence-result'+(session.status==='TIMED_OUT'?' timed-out':''));
    const info=element('div');
-   info.append(element('b','Assessment '+(i+1)+' · '+session.status.replaceAll('_',' ')));
+   info.append(element('b','Verified assessment '+(i+1)));
+   if(session.status==='TIMED_OUT')info.append(element('strong','TIMED OUT'));
+   else if(session.status==='ACCEPTED_ON_TIME')info.append(element('strong','ACCEPTED ON TIME'));
+   else info.append(element('strong',session.status.replaceAll('_',' ')));
    if(typeof session.latencySeconds==='number'&&Number.isFinite(session.latencySeconds))
      info.append(element('small','Verified human acceptance latency: '+session.latencySeconds+' seconds'));
    else if(session.status==='TIMED_OUT')
      info.append(element('small','No permitted human acceptance observed by the deadline'));
    else if(session.status==='INSUFFICIENT_EVIDENCE')
      info.append(element('small','Evidence incomplete; no SLA determination made'));
-   card.append(info);target.append(card);
+   card.append(info);grid.append(card);
   }
+  target.append(grid);
   target.append(element('small','Source: Salesforce Flow + AgentWork, read from private Cloud Storage. Identifiers omitted.','evidence-meta'));
  }catch(err){
   target.replaceChildren();
