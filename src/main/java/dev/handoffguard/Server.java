@@ -22,10 +22,16 @@ public class Server {
         });
         server.createContext("/api/salesforce/evidence",x->{
             if(!x.getRequestMethod().equals("GET")){send(x,405,"application/json","{\"error\":\"Use GET\"}");return;}
-            if (!"true".equalsIgnoreCase(System.getenv().getOrDefault("ENABLE_PRIVATE_EVIDENCE", "false"))) {
-                send(x,403,"application/json","{\"error\":\"Historical Salesforce evidence disabled on public deployments\"}");return;
+            if(!"true".equalsIgnoreCase(System.getenv().getOrDefault("PUBLIC_EVIDENCE_ENABLED","false"))){
+                send(x,503,"application/json","{\"error\":\"Snapshot evidence reader not configured\"}");return;
             }
-            send(x,200,"application/json",Files.readString(Path.of("evidence","known-sessions.json")));
+            try {
+                Map<String,Object> evidence=PublicEvidence.latest(System.getenv());
+                send(x,200,"application/json",Json.encode(evidence));
+            }catch(Exception e){
+                System.err.println("Public evidence read failed: "+e.getClass().getSimpleName());
+                send(x,503,"application/json","{\"error\":\"Verified monitoring evidence is currently unavailable\"}");
+            }
         });
         server.createContext("/api/salesforce/monitor",x->{
             if(!x.getRequestMethod().equals("POST")){send(x,405,"application/json","{\"error\":\"Use POST\"}");return;}
