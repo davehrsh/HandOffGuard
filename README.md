@@ -87,6 +87,22 @@ The verifier checks individual session correlation and ignores Salesforce Automa
 
 Protected endpoints require `X-HandoffGuard-Key`. Never put this key in the public web UI, repository, or client-side JavaScript. The public dashboard does **not** call the private Salesforce endpoints.
 
+## Public evidence panel (real monitoring snapshots)
+
+The Evidence panel on the public simulator now uses `GET /api/salesforce/evidence`, a **server-side read of the latest JSON monitoring snapshot in a private GCS bucket**. It is not a demo fixture and never substitutes simulated verdicts. The response contains only generated time, provenance, status and acceptance latency; Salesforce session/work/marker IDs, transcripts, tokens and credentials stay private.
+
+**One-time deployment configuration is required** after the latest image is deployed. In authenticated Google Cloud Shell, review and run:
+
+```sh
+git clone https://github.com/davehrsh/HandOffGuard.git
+cd HandOffGuard
+bash scripts/enable-public-evidence.sh
+```
+
+The script grants the Cloud Run web service identity **bucket-scoped read-only** access and sets `PUBLIC_EVIDENCE_ENABLED=true` and `MONITOR_GCS_BUCKET`. It does not make the bucket public. Cloud Run automatically redeploys the service after the environment update. Check `/api/salesforce/evidence`: expect JSON with `source=PRIVATE_GCS_MONITORING_SNAPSHOT` and no Salesforce record IDs. The panel reports an error when snapshots or bucket permissions are unavailable; it never fabricates success.
+
+This snapshot is historical and the monitor still runs every 10 minutes, so neither 60-second detection nor live streaming is implied.
+
 ## Scheduled monitoring and historical evidence
 
 `MonitoringJob` (same Java image, separate Cloud Run Job) can scan newly created Flow markers, evaluate their sessions, emit structured Cloud Logging summaries, and save sanitized JSON snapshots into a **private** Google Cloud Storage bucket. `/history` provides local-only viewing of downloaded snapshots; it does not fetch files from Cloud Storage or contact Salesforce.
