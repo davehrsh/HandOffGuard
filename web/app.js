@@ -37,16 +37,40 @@ $('broken').addEventListener('click',()=>execute('broken'));$('fixed').addEventL
 $('export').addEventListener('click',()=>{if(!run)return;const url=URL.createObjectURL(new Blob([JSON.stringify(run,null,2)],{type:'application/json'}));const a=element('a');a.href=url;a.download='handoffguard-'+run.profile+'-'+run.id+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 
 async function loadSalesforceEvidence(){
+ const target=$('salesforce-sessions');
  try{
-  const response=await fetch('/api/salesforce/evidence');if(!response.ok)throw Error('Evidence unavailable');
-  const data=await response.json(), target=$('salesforce-sessions');target.replaceChildren();
-  for(const session of data.sessions){
-   const card=element('div',undefined,'check');const info=element('div');
-   info.append(element('b',session.name+' · '+session.assessment.replaceAll('_',' ')),element('small','Session ID: '+session.sessionId));
-   if(session.requestToAcceptSeconds!==undefined)info.append(element('small','Human AgentWork request → acceptance: '+session.requestToAcceptSeconds+' seconds (not transfer-start SLA)'));
-   if(session.transferStartedAt===null)info.append(element('small','Exact transfer start: not captured'));
+  const response=await fetch('/api/salesforce/evidence',{cache:'no-store'});
+  if(!response.ok){
+   let message='Verified monitoring evidence is unavailable';
+   try{const err=await response.json();if(err.error)message=err.error;}catch(_){}
+   throw Error(message);
+  }
+  const data=await response.json();
+  if(data.source!=='PRIVATE_GCS_MONITORING_SNAPSHOT'||data.provenance!=='SALESFORCE_FLOW_MARKER_AND_AGENTWORK'||!Array.isArray(data.results))
+    throw Error('Unexpected evidence source');
+  target.replaceChildren();
+  const generated=new Date(data.generatedAt);
+  if(!Number.isFinite(generated.getTime()))throw Error('Invalid monitoring timestamp');
+  target.append(element('p','Snapshot recorded: '+generated.toLocaleString()+' · '+data.results.length+' assessed handoffs · 60-second acceptance SLA','evidence-meta'));
+  if(data.results.length===0){target.append(element('p','The latest monitoring snapshot contains no assessed handoffs.','evidence-empty'));return;}
+  const allowed=new Set(['ACCEPTED_ON_TIME','ACCEPTED_LATE','PENDING','TIMED_OUT','INSUFFICIENT_EVIDENCE']);
+  for(const [i,session] of data.results.entries()){
+   if(!allowed.has(session.status))throw Error('Invalid assessment result');
+   const card=element('div',undefined,'check');
+   const info=element('div');
+   info.append(element('b','Assessment '+(i+1)+' · '+session.status.replaceAll('_',' ')));
+   if(typeof session.latencySeconds==='number'&&Number.isFinite(session.latencySeconds))
+     info.append(element('small','Verified human acceptance latency: '+session.latencySeconds+' seconds'));
+   else if(session.status==='TIMED_OUT')
+     info.append(element('small','No permitted human acceptance observed by the deadline'));
+   else if(session.status==='INSUFFICIENT_EVIDENCE')
+     info.append(element('small','Evidence incomplete; no SLA determination made'));
    card.append(info);target.append(card);
   }
- }catch(err){$('salesforce-sessions').textContent='Recorded Salesforce evidence unavailable: '+err.message;}
+  target.append(element('small','Source: Salesforce Flow + AgentWork, read from private Cloud Storage. Identifiers omitted.','evidence-meta'));
+ }catch(err){
+  target.replaceChildren();
+  target.append(element('p',err.message+'. No simulated or cached results substituted.','evidence-empty'));
+ }
 }
 loadSalesforceEvidence();
