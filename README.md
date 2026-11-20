@@ -89,7 +89,7 @@ Protected endpoints require `X-HandoffGuard-Key`. Never put this key in the publ
 
 ## Public evidence panel (real monitoring snapshots)
 
-The Evidence panel on the public simulator now uses `GET /api/salesforce/evidence`, a **server-side read of the latest JSON monitoring snapshot in a private GCS bucket**. It is not a demo fixture and never substitutes simulated verdicts. The response contains only generated time, provenance, status and acceptance latency; Salesforce session/work/marker IDs, transcripts, tokens and credentials stay private.
+The Evidence panel on the public simulator now uses `GET /api/salesforce/evidence`, a **server-side read of a genuine JSON monitoring snapshot in a private GCS bucket**. By default, it reads the latest snapshot; the one-time setup pins the verified November 16 Developer Edition snapshot so the historical test results remain visible after rolling scans return zero sessions. It is not a demo fixture and never substitutes simulated verdicts. The response contains only generated time, provenance, status and acceptance latency; Salesforce session/work/marker IDs, transcripts, tokens and credentials stay private.
 
 **One-time deployment configuration is required** after the latest image is deployed. In authenticated Google Cloud Shell, review and run:
 
@@ -99,7 +99,7 @@ cd HandOffGuard
 bash scripts/enable-public-evidence.sh
 ```
 
-The script grants the Cloud Run web service identity **bucket-scoped read-only** access and sets `PUBLIC_EVIDENCE_ENABLED=true` and `MONITOR_GCS_BUCKET`. It does not make the bucket public. Cloud Run automatically redeploys the service after the environment update. Check `/api/salesforce/evidence`: expect JSON with `source=PRIVATE_GCS_MONITORING_SNAPSHOT` and no Salesforce record IDs. The panel reports an error when snapshots or bucket permissions are unavailable; it never fabricates success.
+The script grants the Cloud Run web service identity **bucket-scoped read-only** access and sets `PUBLIC_EVIDENCE_ENABLED=true`, `MONITOR_GCS_BUCKET`, and `PUBLIC_EVIDENCE_OBJECT` to the existing verified snapshot. The script refuses to proceed if that object has been deleted. It does not make the bucket public. Cloud Run automatically redeploys the service after the environment update. Check `/api/salesforce/evidence`: expect JSON with `source=PRIVATE_GCS_MONITORING_SNAPSHOT` and no Salesforce record IDs. The panel reports an error when snapshots or bucket permissions are unavailable; it never fabricates success.
 
 This snapshot is historical and the monitor still runs every 10 minutes, so neither 60-second detection nor live streaming is implied.
 
