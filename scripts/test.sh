@@ -10,3 +10,4 @@ java -cp build/classes dev.handoffguard.JsonReaderTest
 
 java -cp build/classes dev.handoffguard.TransferMonitorTest
 java -cp build/classes dev.handoffguard.MonitoringJobTest
+java -cp build/classes dev.handoffguard.PublicEvidenceTest
