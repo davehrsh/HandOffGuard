@@ -79,30 +79,3 @@ async function loadSalesforceEvidence(){
  }
 }
 loadSalesforceEvidence();
-
-/** Hash-routed workspace views. Each sidebar item reveals a distinct workflow,
- * rather than scrolling to adjacent sections at the bottom of one long page. */
-const viewNames={
- suite:'Test workbench',
- evidence:'Evidence explorer',
- salesforce:'Verified Salesforce',
- about:'Integration status'
-};
-function setWorkspaceView(){
- const raw=window.location.hash.replace(/^#/,'');
- const view=Object.prototype.hasOwnProperty.call(viewNames,raw)?raw:'suite';
- document.body.dataset.view=view;
- const current=$('current-view-label');
- if(current)current.textContent=viewNames[view];
- document.querySelectorAll('.sidebar-nav a[data-view]').forEach(a=>{
-  const selected=a.dataset.view===view;
-  a.classList.toggle('active',selected);
-  if(selected)a.setAttribute('aria-current','page');
-  else a.removeAttribute('aria-current');
- });
- window.scrollTo({top:0,behavior:'instant'});
-}
-window.addEventListener('hashchange',setWorkspaceView);
-setWorkspaceView();
-$('evidence-run').addEventListener('click',()=>execute('fixed'));
-$('evidence-broken').addEventListener('click',()=>execute('broken'));
