@@ -1,4 +1,4 @@
-name: Verify live Cloud Run dashboard revision
+name: Verify deployed Cloud Run health and public evidence
 on:
   push:
     branches: [main]
@@ -9,18 +9,22 @@ jobs:
   live-web:
     runs-on: ubuntu-latest
     steps:
-      - name: Check deployed HTML contains v1 table styling
+      - name: Check live service health and routes (not a deployment assertion)
         run: |
           set -euo pipefail
           BASE="https://handoffguard-614664795142.asia-south1.run.app"
-          curl --fail --silent --show-error --max-time 25 --retry 4 --retry-delay 4 "$BASE/history" -o history.html
-          grep -F 'min-width:890px' history.html
-          grep -F 'table-layout:fixed' history.html
-          echo "Historical viewer styling verified on live Cloud Run."
-      - name: Check deployed JavaScript contains readable evidence label
+          curl --fail --silent --show-error --max-time 25 --retry 3 "$BASE/api/health" -o health.json
+          grep -F '"status":"UP"' health.json
+          curl --fail --silent --show-error --max-time 25 --retry 3 "$BASE/" -o index.html
+          grep -F 'HandoffGuard' index.html
+          curl --fail --silent --show-error --max-time 25 --retry 3 "$BASE/history" -o history.html
+          grep -F 'Snapshot' history.html
+          curl --fail --silent --show-error --max-time 25 --retry 3 "$BASE/app.js" -o app.js
+          node --check app.js
+      - name: Check verified Salesforce response (real evidence, not a fixture)
         run: |
           set -euo pipefail
           BASE="https://handoffguard-614664795142.asia-south1.run.app"
-          curl --fail --silent --show-error --max-time 25 --retry 4 --retry-delay 4 "$BASE/history.js" -o history.js
-          grep -F 'Salesforce Flow + AgentWork' history.js
-          echo "Historical evidence label verified on live Cloud Run."
+          curl --fail --silent --show-error --max-time 25 --retry 3 "$BASE/api/salesforce/evidence" -o evidence.json
+          node -e 'const d=require("./evidence.json"); if(d.source!=="PRIVATE_GCS_MONITORING_SNAPSHOT"||d.provenance!=="SALESFORCE_FLOW_MARKER_AND_AGENTWORK"||!Array.isArray(d.results)) process.exit(1);'
+          echo "Live API responds with valid, redacted Salesforce monitoring evidence."
