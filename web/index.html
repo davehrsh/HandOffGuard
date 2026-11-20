@@ -1,7 +1,56 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HandoffGuard • Reliability lab</title><link rel="stylesheet" href="/style.css"></head><body>
-<aside><a class="brand" href="/">◈ <span>HandoffGuard</span></a><div class="workspace">ENGINEERING WORKSPACE <b>Retail support lab</b></div><nav><a href="#suite" class="active">◫ &nbsp; Test workbench</a><a href="#evidence">≋ &nbsp; Evidence explorer</a><a href="/history">◷ &nbsp; Private snapshot viewer</a><a href="#about">⌘ &nbsp; Integration status</a></nav><div class="aside-bottom"><span class="dot"></span> Java verification engine<br><small>Cloud Run · v1.0</small></div></aside>
-<main><header><span>Workspace <i>/</i> Retail support <i>/</i> Reliability lab</span><span class="badge">SIMULATED ENVIRONMENT</span></header>
-<section class="intro" id="suite"><div class="eyebrow">AGENT → HUMAN · END-TO-END VERIFICATION</div><h1>A transfer promise<br>isn’t a completed handoff.</h1><p>Verify the destination, context and recovery path.<br>Every verdict comes with observable evidence.</p><div class="actions"><button id="broken" class="primary">Run broken configuration <span>↗</span></button><button id="fixed" class="secondary">Run corrected configuration</button><button id="export" class="text" disabled>↓ Export evidence</button></div><p id="status" class="status" role="status" aria-live="polite">Ready. Run a configuration to inspect six handoff scenarios.</p></section>
-<div class="metrics"><article><label>SCENARIOS</label><strong id="total">06</strong><small>Retail escalation suite</small></article><article><label>CHECKS PASSED</label><strong id="passed">—</strong><small id="passed-sub">Awaiting first run</small></article><article><label>FAILED SCENARIOS</label><strong id="failed">—</strong><small>Release-blocking findings</small></article><article><label>HANDOFF P95</label><strong id="latency">—</strong><small>Simulated event time · 5s SLO</small></article></div>
-<section class="workbench"><div class="suite-panel"><div class="panel-title"><h2>Scenario suite</h2><span id="profile">Not run</span></div><div id="scenarios" class="scenario-list"><p class="empty">Choose a configuration above.<br>The engine will execute and evaluate each scenario.</p></div></div><div id="evidence" class="evidence-panel"><div class="panel-title"><h2>Evidence explorer</h2><span id="verdict">WAITING</span></div><div id="detail"><div class="empty detail-empty"><div class="large-icon">⌁</div><h3>Follow the handoff.</h3><p>Select a result to see assertions and the event timeline.</p></div></div></div></section>
-<section id="salesforce" class="salesforce-evidence"><div class="eyebrow">SALESFORCE · VERIFIED HISTORICAL MONITORING</div><h2>Verified Salesforce handoffs</h2><p class="evidence-intro">Actual Salesforce Flow timestamps correlated with AgentWork acceptance records. The server reads genuine monitoring snapshots from private Cloud Storage and publishes only redacted outcomes. Historical Developer Edition tests — not production telemetry.</p><div id="salesforce-sessions" role="status" aria-live="polite">Loading verified monitoring evidence…</div></section><section id="about" class="integration"><div><span class="eyebrow">INTEGRATION BOUNDARY</span><h2>Built to verify. Honest about the source.</h2><p>This workbench uses deterministic simulations. Separately, the protected Salesforce API verifies actual handoffs using Salesforce Flow transfer timestamps and AgentWork records. Import privately stored monitoring snapshots in the history viewer. No live Salesforce credentials or records are exposed on this public page.</p></div><span class="badge">LIVE API · PROTECTED</span></section><footer>HandoffGuard / An independent engineering project <span>Evidence over assumptions.</span></footer></main><script src="/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0c282d">
+  <meta name="description" content="HandoffGuard — verify agent-to-human transfer reliability with deterministic test scenarios and historical Salesforce evidence.">
+  <title>HandoffGuard — Handoff Reliability Workspace</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" aria-label="Workspace navigation">
+    <a class="brand" href="/" aria-label="HandoffGuard home"><span class="brand-mark" aria-hidden="true">◇</span><span>Handoff<span class="brand-accent">Guard</span></span></a>
+    <div class="workspace"><span class="sidebar-kicker">WORKSPACE</span><b>Retail support lab</b><small>Engineering environment</small></div>
+    <nav class="sidebar-nav" aria-label="Main navigation">
+      <a href="#suite" class="active"><span class="nav-symbol" aria-hidden="true">▣</span><span>Test workbench</span></a>
+      <a href="#evidence"><span class="nav-symbol" aria-hidden="true">≋</span><span>Evidence explorer</span></a>
+      <a href="#salesforce"><span class="nav-symbol" aria-hidden="true">◇</span><span>Verified Salesforce</span></a>
+      <a href="/history"><span class="nav-symbol" aria-hidden="true">◷</span><span>Private snapshot viewer</span></a>
+      <a href="#about"><span class="nav-symbol" aria-hidden="true">⌘</span><span>Integration status</span></a>
+    </nav>
+    <div class="sidebar-bottom"><div class="engine-status"><span class="dot" aria-hidden="true"></span><span>Java verification engine</span></div><small>Cloud Run · v1.0</small><div class="sidebar-footnote">Independent engineering project</div></div>
+  </aside>
+  <main class="main-content">
+    <header class="topbar"><div class="breadcrumbs"><span>Workspace</span><span class="slash">/</span><strong>Reliability overview</strong></div><div class="topbar-right"><span class="live-dot" aria-hidden="true"></span><span class="environment-label">Simulator + verified historical evidence</span></div></header>
+    <div class="page-content">
+      <section class="intro" id="suite" aria-labelledby="page-title">
+        <div class="intro-copy"><div class="eyebrow"><span class="eyebrow-line"></span>AGENT → HUMAN · RELIABILITY ENGINEERING</div><h1 id="page-title">A transfer promise isn't a <em>completed handoff.</em></h1><p>Test the receiving side of every escalation. Distinguish an AI agent's promise from a human's confirmed acceptance.</p></div>
+        <div class="intro-bottom"><div class="actions"><button id="broken" class="primary"><span class="button-icon" aria-hidden="true">↗</span> Run broken configuration</button><button id="fixed" class="secondary"><span class="button-icon" aria-hidden="true">✓</span> Run corrected configuration</button><button id="export" class="text" disabled>↓ Export evidence</button></div><p id="status" class="status" role="status" aria-live="polite">Ready to run six deterministic retail handoff scenarios.</p></div>
+      </section>
+
+      <section class="metrics" aria-label="Simulation summary">
+        <article class="metric-card"><div class="metric-head"><label for="total">SCENARIOS</label><span class="metric-icon metric-icon-teal" aria-hidden="true">▤</span></div><strong id="total">06</strong><small>Retail escalation suite</small></article>
+        <article class="metric-card"><div class="metric-head"><label for="passed">CHECKS PASSED</label><span class="metric-icon metric-icon-green" aria-hidden="true">✓</span></div><strong id="passed">—</strong><small id="passed-sub">Awaiting first run</small></article>
+        <article class="metric-card"><div class="metric-head"><label for="failed">FAILED SCENARIOS</label><span class="metric-icon metric-icon-red" aria-hidden="true">!</span></div><strong id="failed">—</strong><small>Release-blocking findings</small></article>
+        <article class="metric-card"><div class="metric-head"><label for="latency">HANDOFF P95</label><span class="metric-icon metric-icon-blue" aria-hidden="true">↗</span></div><strong id="latency">—</strong><small>Simulated event time · 5s SLO</small></article>
+      </section>
+
+      <section class="workbench" aria-label="Interactive simulation workbench">
+        <div class="suite-panel surface-card"><div class="panel-title"><div class="panel-heading"><span class="panel-icon" aria-hidden="true">▤</span><h2>Scenario suite</h2></div><span id="profile" class="small-pill">Not run</span></div><div id="scenarios" class="scenario-list"><div class="empty suite-empty"><span class="empty-glyph" aria-hidden="true">▤</span><h3>No simulation run yet</h3><p>Use the controls above to execute six retail escalation scenarios and inspect each assertion.</p></div></div></div>
+        <div id="evidence" class="evidence-panel surface-card"><div class="panel-title"><div class="panel-heading"><span class="panel-icon" aria-hidden="true">⌁</span><h2>Evidence explorer</h2></div><span id="verdict" class="small-pill">WAITING</span></div><div id="detail"><div class="empty detail-empty"><div class="large-icon" aria-hidden="true">⌁</div><h3>Follow the handoff</h3><p>Choose a scenario after running the suite to inspect assertions and the event timeline.</p></div></div></div>
+      </section>
+
+      <section id="salesforce" class="salesforce-evidence surface-card" aria-labelledby="salesforce-title">
+        <div class="salesforce-hero"><div class="salesforce-brandrow"><span class="salesforce-logo" aria-hidden="true">SF</span><div><div class="eyebrow">SALESFORCE · VERIFIED HISTORICAL MONITORING</div><h2 id="salesforce-title">Real handoffs. <span>Verified evidence.</span></h2></div></div><p class="evidence-intro">Actual Salesforce Flow timestamps correlated with AgentWork acceptance records. Outcomes are read from private Cloud Storage and sanitized before being displayed. These are controlled Developer Edition tests, not production telemetry.</p></div>
+        <div id="salesforce-sessions" role="status" aria-live="polite"><p class="evidence-empty">Loading verified monitoring evidence…</p></div>
+      </section>
+      <section id="about" class="integration surface-card" aria-labelledby="about-title"><span class="integration-icon" aria-hidden="true">♢</span><div class="integration-copy"><div class="eyebrow">TRUST &amp; INTEGRATION BOUNDARY</div><h2 id="about-title">Built to verify. Honest about the source.</h2><p>The workbench runs deterministic simulations. The protected Salesforce API independently verifies actual handoffs using Salesforce Flow transfer timestamps and AgentWork records. Historical evidence is read from private snapshots; no Salesforce credentials or customer records are exposed publicly.</p></div><span class="badge integration-badge"><span aria-hidden="true">●</span> LIVE API · PROTECTED</span></section>
+      <footer><span>© HandoffGuard · Independent engineering project</span><span>Evidence over assumptions.</span></footer>
+    </div>
+  </main>
+</div>
+<script src="/app.js"></script>
+</body>
+</html>
