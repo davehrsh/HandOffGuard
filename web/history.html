@@ -1,19 +1,18 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HandoffGuard · Evidence History</title><link rel="stylesheet" href="/style.css">
-<style>.import{max-width:1050px;margin:35px auto;background:#fff;padding:28px;border:1px solid #e0e5e8;border-radius:9px}.import h1{font-size:34px}.import table{width:100%;min-width:890px;table-layout:fixed;border-collapse:collapse;margin-top:22px;font-size:12px}.import th,.import td{padding:14px 14px;border-bottom:1px solid #e0e5e8;text-align:left;vertical-align:middle;overflow-wrap:anywhere;line-height:1.5}.import th{color:#708088;font-size:10px;letter-spacing:.4px;text-transform:uppercase;background:#f6f8f8}.import th:nth-child(1){width:19%}.import th:nth-child(2){width:23%}.import th:nth-child(3){width:22%}.import th:nth-child(4){width:16%}.import th:nth-child(5){width:20%}.import input{margin-top:14px}.import .summary{font-weight:600;margin-top:15px}.import .warn{color:#a03930}.import .ok{color:#17634d}.import .scroll{overflow-x:auto}</style></head>
-<body><main style="margin-left:0;max-width:1200px;margin:auto"><header>
-<a href="/" style="color:inherit">← Simulator</a><b>HandoffGuard · Private evidence viewer</b><span class="badge">LOCAL FILE ONLY</span>
-</header>
-<section class="import">
-<div class="eyebrow">SALESFORCE · HISTORICAL EVIDENCE</div>
-<h1>Review monitoring snapshots.</h1>
-<p>Import a JSON snapshot downloaded from your private Google Cloud Storage bucket. This page processes it entirely inside your browser; it does not upload the file or contact Salesforce.</p>
-<label for="snapshot">Snapshot JSON</label><input id="snapshot" type="file" accept=".json,application/json">
-<p id="file-status" role="status" aria-live="polite">No snapshot loaded.</p>
-<div id="metrics" class="summary"></div>
-<div class="scroll"><table><thead><tr><th>Session</th><th>Transfer started (UTC)</th><th>Verdict</th><th>Acceptance latency</th><th>Evidence</th></tr></thead><tbody id="results"></tbody></table></div>
-<p>Interpretation: TIMED_OUT means no permitted human acceptance was found in the retrieved AgentWork snapshot after the 60-second deadline. It is not proof that a human never accepted later. Multiple transfer attempts are deliberately reported as INSUFFICIENT_EVIDENCE.</p>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0c282d"><title>HandoffGuard — Private Evidence Viewer</title><link rel="stylesheet" href="/style.css"></head>
+<body class="history-shell">
+<header class="topbar"><div class="breadcrumbs"><a href="/" style="text-decoration:none;color:#16755e;font-weight:750">← HandoffGuard</a><span class="slash">/</span><strong>Private evidence viewer</strong></div><div class="topbar-right"><span class="badge integration-badge">LOCAL FILE ONLY</span></div></header>
+<main class="history-container">
+<section class="import" aria-labelledby="history-title">
+  <div class="eyebrow">SALESFORCE · PRIVATE HISTORICAL EVIDENCE</div>
+  <h1 id="history-title">Inspect monitoring snapshots.</h1>
+  <p>Review evidence captured by the scheduled Salesforce verifier. Import a JSON snapshot downloaded from your private Google Cloud Storage bucket. Parsing happens entirely in your browser; the file is never uploaded to the server.</p>
+  <label for="snapshot">Choose a monitoring snapshot</label>
+  <input id="snapshot" type="file" accept=".json,application/json">
+  <p id="file-status" role="status" aria-live="polite">No snapshot loaded.</p>
+  <div id="metrics" class="summary" aria-live="polite"></div>
+  <div class="scroll"><table><thead><tr><th>Session</th><th>Transfer started (UTC)</th><th>Verdict</th><th>Acceptance latency</th><th>Evidence source</th></tr></thead><tbody id="results"></tbody></table></div>
+  <p><strong>Reading the results:</strong> TIMED_OUT means no permitted human acceptance was found in the retrieved AgentWork snapshot after the 60-second deadline. It does not prove a human never accepted later. Multiple transfer attempts are reported as INSUFFICIENT_EVIDENCE.</p>
 </section>
-<footer>HandoffGuard · Read-only evidence visualization <span>No credentials stored in the browser.</span></footer>
+<footer><span>HandoffGuard · Read-only evidence visualization</span><span>No credentials or files uploaded.</span></footer>
 </main><script src="/history.js"></script></body></html>
