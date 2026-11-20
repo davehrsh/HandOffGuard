@@ -18,6 +18,8 @@ jobs:
       - name: Validate deployment script and viewer JavaScript
         run: |
           bash -n scripts/setup-monitoring-gcp.sh
+          bash -n scripts/enable-public-evidence.sh
           node --check web/history.js
+          node --check web/app.js
       - name: Validate Docker image builds
         run: docker build -t handoffguard:ci .
